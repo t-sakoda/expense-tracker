@@ -6,22 +6,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var description string
-var amount float64
-
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Add an expense with a description and amount.",
-	Long: `Add an expense with a description and amount. For example:
+	Use:     "add",
+	Short:   "Add an expense with a description and amount.",
+	Example: `expense-tracker add --description "Lunch" --amount 20`,
 
-expense-tracker add --description "Lunch" --amount 20`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		amount, errA := cmd.Flags().GetFloat64("amount")
+		description, errD := cmd.Flags().GetString("description")
 
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("description: ", description)
-		fmt.Println("amount: ", amount)
+		if errA != nil {
+			return fmt.Errorf("failed to get amount: %w", errA)
+		}
+		if amount <= 0 {
+			return fmt.Errorf("invalid expense amount: %f", amount)
+		}
+		if errD != nil {
+			return fmt.Errorf("failed to get description: %w", errD)
+		}
+		if description == "" {
+			return fmt.Errorf("description is required")
+		}
+
+		cmd.Printf("description: %s\n", description)
+		cmd.Printf("amount: %f\n", amount)
 		id := "360990ce-10cb-49a3-b49e-69e494a6d557"
-		fmt.Printf("Expense added successfully (ID: %s)\n", id)
+		cmd.Printf("Expense added successfully (ID: %s)\n", id)
+
+		return nil
 	},
 }
 
@@ -37,8 +50,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	addCmd.Flags().StringVar(&description, "description", "", "Description of the expense")
-	addCmd.Flags().Float64Var(&amount, "amount", 0, "Amount of the expense")
+	addCmd.Flags().String("description", "", "Description of the expense")
+	addCmd.Flags().Float64("amount", 0, "Amount of the expense")
 	addCmd.MarkFlagRequired("description")
 	addCmd.MarkFlagRequired("amount")
 }
