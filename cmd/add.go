@@ -6,18 +6,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var description string
+var amount float64
+
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Add an expense with a description and amount.",
+	Long: `Add an expense with a description and amount. For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+expense-tracker add --description "Lunch" --amount 20`,
+
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("add called")
+		fmt.Println("description: ", description)
+		fmt.Println("amount: ", amount)
+		id := "360990ce-10cb-49a3-b49e-69e494a6d557"
+		fmt.Printf("Expense added successfully (ID: %s)\n", id)
 	},
 }
 
@@ -33,4 +37,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	addCmd.Flags().StringVar(&description, "description", "", "Description of the expense")
+	addCmd.Flags().Float64Var(&amount, "amount", 0, "Amount of the expense")
+	addCmd.MarkFlagRequired("description")
+	addCmd.MarkFlagRequired("amount")
 }
