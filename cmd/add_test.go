@@ -2,19 +2,11 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/t-sakoda/expense-tracker/use_case_test"
 )
-
-type MockAddExpenseUseCase struct{}
-
-func (uc *MockAddExpenseUseCase) Execute(description string, amount float64) (uint64, error) {
-	return 1, nil
-}
-
-var mockUseCase = &MockAddExpenseUseCase{}
 
 func TestAddCmdRunE(t *testing.T) {
 	tests := []struct {
@@ -37,7 +29,8 @@ func TestAddCmdRunE(t *testing.T) {
 			cmd.SetOut(out)
 			cmd.SetErr(out)
 			args := []string{}
-			err := addCmdRunE(cmd, args, mockUseCase)
+			uc := &use_case_test.MockAddExpenseUseCase{}
+			err := addCmdRunE(cmd, args, uc)
 
 			if (err != nil) != tt.expectError {
 				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
@@ -52,14 +45,6 @@ func TestAddCmdRunE(t *testing.T) {
 		})
 	}
 }
-
-type MockAddExpenseUseCaseWithError struct{}
-
-func (uc *MockAddExpenseUseCaseWithError) Execute(description string, amount float64) (uint64, error) {
-	return 0, fmt.Errorf("intentional error")
-}
-
-var mockUseCaseWithError = &MockAddExpenseUseCaseWithError{}
 
 func TestAddCmdRunEWithUseCaseError(t *testing.T) {
 	tests := []struct {
@@ -80,7 +65,8 @@ func TestAddCmdRunEWithUseCaseError(t *testing.T) {
 			cmd.SetOut(out)
 			cmd.SetErr(out)
 			args := []string{}
-			err := addCmdRunE(cmd, args, mockUseCaseWithError)
+			uc := &use_case_test.MockAddExpenseUseCaseWithError{}
+			err := addCmdRunE(cmd, args, uc)
 
 			if err == nil {
 				t.Errorf("expected error, got nil")
