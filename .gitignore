@@ -28,4 +28,4 @@ go.work.sum
 expense-tracker
 
 # Output file
-expense.json
+expenses.json
