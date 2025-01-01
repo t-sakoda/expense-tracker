@@ -22,6 +22,6 @@ func (uc *AddExpenseUseCase) Execute(description string, amount float64) (uint64
 		return 0, errors.New("description is required")
 	}
 	expense := domain.NewExpense(description, amount)
-	err := uc.Repo.Create(expense)
+	err := uc.Repo.Insert(expense)
 	return expense.Id, err
 }
