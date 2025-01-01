@@ -1,15 +1,25 @@
 package domain
 
 type Expense struct {
-	Id          uint64
-	Amount      float64
-	Description string
+	id          uint64
+	amount      float64
+	description string
 }
 
-func NewExpense(description string, amount float64) *Expense {
+func (e *Expense) Id() uint64 {
+	return e.id
+}
+func (e *Expense) Amount() float64 {
+	return e.amount
+}
+func (e *Expense) Description() string {
+	return e.description
+}
+
+func NewExpense(id uint64, amount float64, description string) *Expense {
 	return &Expense{
-		Id:          1,
-		Amount:      amount,
-		Description: description,
+		id:          id,
+		amount:      amount,
+		description: description,
 	}
 }
