@@ -10,11 +10,11 @@ func (r *MockExpenseRepository) InsertCallCount() int {
 	return r.insertCallCount
 }
 
-func (r *MockExpenseRepository) GenerateNewId() uint64 {
-	return 1
+func (r *MockExpenseRepository) GenerateNewId() (uint64, error) {
+	return 1, nil
 }
 
-func (r *MockExpenseRepository) Insert(expense *domain.Expense) error {
+func (r *MockExpenseRepository) Save(expense *domain.Expense) error {
 	r.insertCallCount++
 	return nil
 }

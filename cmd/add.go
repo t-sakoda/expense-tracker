@@ -42,7 +42,7 @@ var addCmd = &cobra.Command{
 	Example: `expense-tracker add --description "Lunch" --amount 20`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		repo := infra.ExpenseJsonRepository{}
+		repo := &infra.ExpenseJsonRepository{}
 		uc := &use_case.AddExpenseUseCase{Repo: repo}
 		return addCmdRunE(cmd, args, uc)
 	},

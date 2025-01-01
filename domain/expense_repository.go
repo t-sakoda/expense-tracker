@@ -1,6 +1,6 @@
 package domain
 
 type ExpenseRepository interface {
-	GenerateNewId() uint64
-	Insert(expense *Expense) error
+	GenerateNewId() (uint64, error)
+	Save(expense *Expense) error
 }
