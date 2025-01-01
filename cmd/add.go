@@ -4,7 +4,35 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/t-sakoda/expense-tracker/infra"
+	"github.com/t-sakoda/expense-tracker/use_case"
 )
+
+func addCmdRunE(cmd *cobra.Command, args []string, uc *use_case.AddExpenseUseCase) error {
+	amount, errA := cmd.Flags().GetFloat64("amount")
+	description, errD := cmd.Flags().GetString("description")
+
+	if errA != nil {
+		return fmt.Errorf("failed to get amount: %w", errA)
+	}
+	if amount <= 0 {
+		return fmt.Errorf("invalid expense amount: %f", amount)
+	}
+	if errD != nil {
+		return fmt.Errorf("failed to get description: %w", errD)
+	}
+	if description == "" {
+		return fmt.Errorf("description is required")
+	}
+
+	cmd.Printf("description: %s\n", description)
+	cmd.Printf("amount: %f\n", amount)
+	id := "360990ce-10cb-49a3-b49e-69e494a6d557"
+	cmd.Printf("Expense added successfully (ID: %s)\n", id)
+
+	return nil
+}
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
@@ -13,28 +41,9 @@ var addCmd = &cobra.Command{
 	Example: `expense-tracker add --description "Lunch" --amount 20`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		amount, errA := cmd.Flags().GetFloat64("amount")
-		description, errD := cmd.Flags().GetString("description")
-
-		if errA != nil {
-			return fmt.Errorf("failed to get amount: %w", errA)
-		}
-		if amount <= 0 {
-			return fmt.Errorf("invalid expense amount: %f", amount)
-		}
-		if errD != nil {
-			return fmt.Errorf("failed to get description: %w", errD)
-		}
-		if description == "" {
-			return fmt.Errorf("description is required")
-		}
-
-		cmd.Printf("description: %s\n", description)
-		cmd.Printf("amount: %f\n", amount)
-		id := "360990ce-10cb-49a3-b49e-69e494a6d557"
-		cmd.Printf("Expense added successfully (ID: %s)\n", id)
-
-		return nil
+		repo := infra.ExpenseJsonRepository{}
+		uc := use_case.NewAddExpenseUseCase(repo)
+		return addCmdRunE(cmd, args, uc)
 	},
 }
 
