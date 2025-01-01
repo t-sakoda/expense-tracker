@@ -6,22 +6,22 @@ import (
 	"github.com/t-sakoda/expense-tracker/domain"
 )
 
+type IAddExpenseUseCase interface {
+	Execute(description string, amount float64) (uint64, error)
+}
+
 type AddExpenseUseCase struct {
-	repo domain.ExpenseRepository
+	Repo domain.ExpenseRepository
 }
 
-func NewAddExpenseUseCase(repo domain.ExpenseRepository) *AddExpenseUseCase {
-	return &AddExpenseUseCase{repo: repo}
-}
-
-func (uc *AddExpenseUseCase) Execute(description string, amount float64) error {
+func (uc *AddExpenseUseCase) Execute(description string, amount float64) (uint64, error) {
 	if amount <= 0 {
-		return errors.New("invalid expense amount")
+		return 0, errors.New("invalid expense amount")
 	}
 	if description == "" {
-		return errors.New("description is required")
+		return 0, errors.New("description is required")
 	}
 	expense := domain.NewExpense(description, amount)
-	err := uc.repo.Create(expense)
-	return err
+	err := uc.Repo.Create(expense)
+	return expense.Id, err
 }

@@ -6,5 +6,6 @@ type ExpenseJsonRepository struct {
 }
 
 func (repo ExpenseJsonRepository) Create(expense *domain.Expense) error {
-	panic("implement me")
+	// TODO implement
+	return nil
 }

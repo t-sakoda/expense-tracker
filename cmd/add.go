@@ -9,7 +9,7 @@ import (
 	"github.com/t-sakoda/expense-tracker/use_case"
 )
 
-func addCmdRunE(cmd *cobra.Command, args []string, uc *use_case.AddExpenseUseCase) error {
+func addCmdRunE(cmd *cobra.Command, _ []string, uc use_case.IAddExpenseUseCase) error {
 	amount, errA := cmd.Flags().GetFloat64("amount")
 	description, errD := cmd.Flags().GetString("description")
 
@@ -26,11 +26,12 @@ func addCmdRunE(cmd *cobra.Command, args []string, uc *use_case.AddExpenseUseCas
 		return fmt.Errorf("description is required")
 	}
 
-	cmd.Printf("description: %s\n", description)
-	cmd.Printf("amount: %f\n", amount)
-	id := "360990ce-10cb-49a3-b49e-69e494a6d557"
-	cmd.Printf("Expense added successfully (ID: %s)\n", id)
+	id, err := uc.Execute(description, amount)
+	if err != nil {
+		return fmt.Errorf("failed to add expense: %w", err)
+	}
 
+	cmd.Printf("Expense added successfully (ID: %d)\n", id)
 	return nil
 }
 
@@ -42,7 +43,7 @@ var addCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		repo := infra.ExpenseJsonRepository{}
-		uc := use_case.NewAddExpenseUseCase(repo)
+		uc := &use_case.AddExpenseUseCase{Repo: repo}
 		return addCmdRunE(cmd, args, uc)
 	},
 }

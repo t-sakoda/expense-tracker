@@ -2,11 +2,20 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
-func Test_addCmd(t *testing.T) {
+type MockAddExpenseUseCase struct{}
+
+func (uc *MockAddExpenseUseCase) Execute(description string, amount float64) (uint64, error) {
+	return 1, nil
+}
+
+var mockUseCase = &MockAddExpenseUseCase{}
+
+func TestAddCmdRunE(t *testing.T) {
 	tests := []struct {
 		description string
 		amount      float64
@@ -20,23 +29,23 @@ func Test_addCmd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.description, func(t *testing.T) {
+			cmd := &cobra.Command{}
+			cmd.Flags().String("description", tt.description, "")
+			cmd.Flags().Float64("amount", tt.amount, "")
 			out := new(bytes.Buffer)
-			rootCmd.SetOut(out)
-			rootCmd.SetErr(out)
-
-			args := []string{"add", "--description", tt.description, "--amount", fmt.Sprintf("%f", tt.amount)}
-			rootCmd.SetArgs(args)
-
-			err := rootCmd.Execute()
+			cmd.SetOut(out)
+			cmd.SetErr(out)
+			args := []string{}
+			err := addCmdRunE(cmd, args, mockUseCase)
 
 			if (err != nil) != tt.expectError {
 				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
 			}
 
 			if !tt.expectError {
-				expectedOutput := fmt.Sprintf("description: %s\namount: %f\nExpense added successfully (ID: 360990ce-10cb-49a3-b49e-69e494a6d557)\n", tt.description, tt.amount)
-				if out.String() != expectedOutput {
-					t.Errorf("expected output: %s, got: %s", expectedOutput, out.String())
+				expected := "Expense added successfully (ID: 1)\n"
+				if out.String() != expected {
+					t.Errorf("expected: %s, got: %s", expected, out.String())
 				}
 			}
 		})

@@ -8,7 +8,7 @@ type Expense struct {
 
 func NewExpense(description string, amount float64) *Expense {
 	return &Expense{
-		Id:          0,
+		Id:          1,
 		Amount:      amount,
 		Description: description,
 	}
