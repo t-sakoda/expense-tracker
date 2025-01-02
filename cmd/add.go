@@ -2,12 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
 	"github.com/t-sakoda/expense-tracker/infra"
 	"github.com/t-sakoda/expense-tracker/use_case"
 )
+
+const jsonFilePath = "expenses.json"
 
 func addCmdRunE(cmd *cobra.Command, _ []string, uc use_case.IAddExpenseUseCase) error {
 	amount, errA := cmd.Flags().GetFloat64("amount")
@@ -42,7 +45,13 @@ var addCmd = &cobra.Command{
 	Example: `expense-tracker add --description "Lunch" --amount 20`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		repo := &infra.ExpenseJsonRepository{}
+		file, err := os.OpenFile(jsonFilePath, os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open file: %w", err)
+		}
+		defer file.Close()
+
+		repo := infra.NewExpenseJsonRepository(file)
 		uc := &use_case.AddExpenseUseCase{Repo: repo}
 		return addCmdRunE(cmd, args, uc)
 	},
