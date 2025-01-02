@@ -10,14 +10,19 @@ import (
 	"github.com/t-sakoda/expense-tracker/domain"
 )
 
-type ExpenseJsonRepository struct {
-	readWriteSeeker io.ReadWriteSeeker
-	mutex           sync.Mutex
+type File interface {
+	io.ReadWriteSeeker
+	Truncate(size int64) error
 }
 
-func NewExpenseJsonRepository(rws io.ReadWriteSeeker) *ExpenseJsonRepository {
+type ExpenseJsonRepository struct {
+	file  File
+	mutex sync.Mutex
+}
+
+func NewExpenseJsonRepository(f File) *ExpenseJsonRepository {
 	return &ExpenseJsonRepository{
-		readWriteSeeker: rws,
+		file: f,
 	}
 }
 
@@ -75,12 +80,12 @@ func (r *ExpenseJsonRepository) Save(expense *domain.Expense) error {
 
 func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {
 	// Seek to the start of the file
-	if _, err := r.readWriteSeeker.Seek(0, io.SeekStart); err != nil {
+	if _, err := r.file.Seek(0, io.SeekStart); err != nil {
 		return nil, fmt.Errorf("failed to seek to the start of the file: %w", err)
 	}
 
 	var expenses []domain.Expense
-	decoder := json.NewDecoder(r.readWriteSeeker)
+	decoder := json.NewDecoder(r.file)
 	err := decoder.Decode(&expenses)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("failed to decode JSON: %w", err)
@@ -90,24 +95,20 @@ func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {
 
 func (r *ExpenseJsonRepository) writeJson(expenses []domain.Expense) error {
 	// Seek to the start of the file
-	if _, err := r.readWriteSeeker.Seek(0, io.SeekStart); err != nil {
+	if _, err := r.file.Seek(0, io.SeekStart); err != nil {
 		return fmt.Errorf("failed to seek to the start of the file: %w", err)
 	}
 
-	if err := r.clear(); err != nil {
+	// Clear the file
+	err := r.file.Truncate(0)
+	if err != nil {
 		return fmt.Errorf("failed to clear the file: %w", err)
 	}
-	encoder := json.NewEncoder(r.readWriteSeeker)
+
+	encoder := json.NewEncoder(r.file)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(expenses); err != nil {
 		return fmt.Errorf("failed to encode JSON: %w", err)
 	}
 	return nil
-}
-
-func (r *ExpenseJsonRepository) clear() error {
-	if t, ok := r.readWriteSeeker.(interface{ Truncate(size int64) error }); ok {
-		return t.Truncate(0) // Clear the file
-	}
-	return errors.New("readWriteSeeker does not support truncation")
 }
