@@ -1,41 +1,30 @@
 package infra
 
 import (
-	"errors"
-
 	"github.com/t-sakoda/expense-tracker/domain"
 )
 
-/**
- * MockExpenseRepository
- */
 type MockExpenseRepository struct {
-	SaveCallCount int
+	SaveFunc               func(expense *domain.Expense) error
+	GenerateNewIdFunc      func() (uint64, error)
+	SaveCallCount          int
+	GenerateNewIdCallCount int
 }
 
 func (m *MockExpenseRepository) Save(expense *domain.Expense) error {
+	if m.SaveFunc != nil {
+		return m.SaveFunc(expense)
+	}
+	// default implementation
 	m.SaveCallCount++
 	return nil
 }
 
 func (m *MockExpenseRepository) GenerateNewId() (uint64, error) {
-	return 1, nil
-}
-
-/**
- * MockExpenseRepositoryWithError
- */
-type MockExpenseRepositoryWithError struct {
-	SaveCallCount          int
-	GenerateNewIdCallCount int
-}
-
-func (m *MockExpenseRepositoryWithError) Save(expense *domain.Expense) error {
-	m.SaveCallCount++
-	return errors.New("failed to save expense")
-}
-
-func (m *MockExpenseRepositoryWithError) GenerateNewId() (uint64, error) {
+	if m.GenerateNewIdFunc != nil {
+		return m.GenerateNewIdFunc()
+	}
+	// default implementation
 	m.GenerateNewIdCallCount++
-	return 0, errors.New("failed to generate id")
+	return 1, nil
 }

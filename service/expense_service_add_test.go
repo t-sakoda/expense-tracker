@@ -1,8 +1,10 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
+	"github.com/t-sakoda/expense-tracker/domain"
 	"github.com/t-sakoda/expense-tracker/infra"
 )
 
@@ -48,21 +50,49 @@ func TestExpenseServiceAdd(t *testing.T) {
 }
 
 func TestExpenseServiceAddWithError(t *testing.T) {
-	repo := &infra.MockExpenseRepositoryWithError{}
-	s := NewExpenseService(repo)
-	id, err := s.Add("Lunch", 20)
+	t.Run("Failed to generate id", func(t *testing.T) {
+		repo := &infra.MockExpenseRepository{}
+		repo.GenerateNewIdFunc = func() (uint64, error) {
+			repo.GenerateNewIdCallCount++
+			return 0, errors.New("failed to generate id")
+		}
+		s := NewExpenseService(repo)
+		id, err := s.Add("Lunch", 20)
 
-	if err == nil {
-		t.Errorf("expected error: %v, got: %v", true, false)
-	}
+		if err == nil {
+			t.Errorf("expected error: %v, got: %v", true, false)
+		}
+		if id != 0 {
+			t.Errorf("expected: 0, got: %d", id)
+		}
+		if repo.GenerateNewIdCallCount != 1 {
+			t.Errorf("expected: 1, got: %d", repo.GenerateNewIdCallCount)
+		}
+		if repo.SaveCallCount != 0 {
+			t.Errorf("expected: 0, got: %d", repo.SaveCallCount)
+		}
+	})
 
-	if id != 0 {
-		t.Errorf("expected: 0, got: %d", id)
-	}
-	if repo.GenerateNewIdCallCount != 1 {
-		t.Errorf("expected: 1, got: %d", repo.GenerateNewIdCallCount)
-	}
-	if repo.SaveCallCount != 0 {
-		t.Errorf("expected: 0, got: %d", repo.SaveCallCount)
-	}
+	t.Run("Failed to save expense", func(t *testing.T) {
+		repo := &infra.MockExpenseRepository{}
+		repo.SaveFunc = func(expense *domain.Expense) error {
+			repo.SaveCallCount++
+			return errors.New("failed to save expense")
+		}
+		s := NewExpenseService(repo)
+		id, err := s.Add("Lunch", 20)
+
+		if err == nil {
+			t.Errorf("expected error: %v, got: %v", true, false)
+		}
+		if id != 0 {
+			t.Errorf("expected: 0, got: %d", id)
+		}
+		if repo.GenerateNewIdCallCount != 1 {
+			t.Errorf("expected: 1, got: %d", repo.GenerateNewIdCallCount)
+		}
+		if repo.SaveCallCount != 1 {
+			t.Errorf("expected: 1, got: %d", repo.SaveCallCount)
+		}
+	})
 }
