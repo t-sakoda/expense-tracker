@@ -11,8 +11,8 @@ import (
 )
 
 func TestExpenseJsonRepositorySave(t *testing.T) {
-	fs := new(afero.MemMapFs)
-	file, err := afero.TempFile(fs, "", "ioutil-test")
+	fs := afero.NewMemMapFs()
+	file, err := fs.Create("test.json")
 	if err != nil {
 		t.Fatalf("failed to create file: %v", err)
 	}
