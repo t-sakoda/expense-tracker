@@ -7,12 +7,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/t-sakoda/expense-tracker/infra"
-	"github.com/t-sakoda/expense-tracker/use_case"
+	"github.com/t-sakoda/expense-tracker/service"
 )
 
 const jsonFilePath = "expenses.json"
 
-func addCmdRunE(cmd *cobra.Command, _ []string, uc use_case.IAddExpenseUseCase) error {
+func addCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInterface) error {
 	amount, errA := cmd.Flags().GetFloat64("amount")
 	description, errD := cmd.Flags().GetString("description")
 
@@ -29,7 +29,7 @@ func addCmdRunE(cmd *cobra.Command, _ []string, uc use_case.IAddExpenseUseCase) 
 		return fmt.Errorf("description is required")
 	}
 
-	id, err := uc.Execute(description, amount)
+	id, err := svc.Add(description, amount)
 	if err != nil {
 		return fmt.Errorf("failed to add expense: %w", err)
 	}
@@ -52,8 +52,8 @@ var addCmd = &cobra.Command{
 		defer file.Close()
 
 		repo := infra.NewExpenseJsonRepository(file)
-		uc := &use_case.AddExpenseUseCase{Repo: repo}
-		return addCmdRunE(cmd, args, uc)
+		service := service.NewExpenseService(repo)
+		return addCmdRunE(cmd, args, service)
 	},
 }
 

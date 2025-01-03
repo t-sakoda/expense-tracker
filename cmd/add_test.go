@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
-	"github.com/t-sakoda/expense-tracker/use_case_test"
+	"github.com/t-sakoda/expense-tracker/service"
 )
 
 func TestAddCmdRunE(t *testing.T) {
@@ -29,8 +29,8 @@ func TestAddCmdRunE(t *testing.T) {
 			cmd.SetOut(out)
 			cmd.SetErr(out)
 			args := []string{}
-			uc := &use_case_test.MockAddExpenseUseCase{}
-			err := addCmdRunE(cmd, args, uc)
+			service := service.NewMockExpenseService()
+			err := addCmdRunE(cmd, args, service)
 
 			if (err != nil) != tt.expectError {
 				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
@@ -65,7 +65,7 @@ func TestAddCmdRunEWithUseCaseError(t *testing.T) {
 			cmd.SetOut(out)
 			cmd.SetErr(out)
 			args := []string{}
-			uc := &use_case_test.MockAddExpenseUseCaseWithError{}
+			uc := &service.MockExpenseServiceWithError{}
 			err := addCmdRunE(cmd, args, uc)
 
 			if err == nil {
