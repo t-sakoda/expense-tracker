@@ -14,6 +14,7 @@ var ErrExpenseNotFound = errors.New("expense not found")
 type ExpenseServiceInterface interface {
 	Add(description string, amount float64) (uint64, error)
 	Update(id uint64, description string, amount float64) error
+	Delete(id uint64) error
 }
 
 type ExpenseService struct {
@@ -64,4 +65,8 @@ func (s *ExpenseService) Update(id uint64, description string, amount float64) e
 	}
 
 	return nil
+}
+
+func (s *ExpenseService) Delete(id uint64) error {
+	return errors.New("not implemented")
 }

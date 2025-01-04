@@ -22,6 +22,10 @@ func (m *MockExpenseService) Update(id uint64, description string, amount float6
 	return nil
 }
 
+func (m *MockExpenseService) Delete(id uint64) error {
+	return nil
+}
+
 /**
  * MockExpenseServiceWithError
  */
@@ -38,4 +42,8 @@ func (m *MockExpenseServiceWithError) Add(description string, amount float64) (u
 
 func (m *MockExpenseServiceWithError) Update(id uint64, description string, amount float64) error {
 	return errors.New("failed to update expense")
+}
+
+func (m *MockExpenseServiceWithError) Delete(id uint64) error {
+	return errors.New("failed to delete expense")
 }

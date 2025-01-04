@@ -2,35 +2,52 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/t-sakoda/expense-tracker/infra"
+	"github.com/t-sakoda/expense-tracker/service"
 )
 
-// deleteCmd represents the delete command
-var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+func deleteCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInterface) error {
+	id, errId := cmd.Flags().GetUint64("id")
+	if errId != nil {
+		return fmt.Errorf("failed to get ID: %w", errId)
+	}
+	if id == 0 {
+		return fmt.Errorf("invalid ID")
+	}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("delete called")
+	if err := svc.Delete(id); err != nil {
+		return fmt.Errorf("failed to delete expense: %w", err)
+	}
+
+	cmd.Printf("Expense deleted successfully")
+	return nil
+}
+
+var deleteCmd = &cobra.Command{
+	Use:     "delete",
+	Short:   "Delete an expense.",
+	Example: `expense-tracker delete --id 1`,
+
+	RunE: func(cmd *cobra.Command, args []string) error {
+		file, err := os.OpenFile(jsonFilePath, os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open file: %w", err)
+		}
+		defer file.Close()
+
+		repo := infra.NewExpenseJsonRepository(file)
+		service := service.NewExpenseService(repo)
+		return deleteCmdRunE(cmd, args, service)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deleteCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	deleteCmd.Flags().Uint64("id", 0, "ID of the expense")
+	deleteCmd.MarkFlagRequired("id")
 }
