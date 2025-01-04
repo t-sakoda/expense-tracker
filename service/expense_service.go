@@ -21,7 +21,7 @@ type ExpenseServiceInterface interface {
 	Delete(id uint64) error
 	List() ([]domain.Expense, error)
 	Summary() (float64, error)
-	SummaryMonth(month int) (float64, error)
+	SummaryMonth(month uint8) (float64, error)
 }
 
 type ExpenseService struct {
@@ -110,7 +110,7 @@ func (s *ExpenseService) Summary() (float64, error) {
 	return total, nil
 }
 
-func (s *ExpenseService) SummaryMonth(month int) (float64, error) {
+func (s *ExpenseService) SummaryMonth(month uint8) (float64, error) {
 	expenses, err := s.repo.FindAll()
 	if err != nil {
 		return 0, ErrFailedToSummary

@@ -40,7 +40,7 @@ func TestExpenseServiceSummaryMonth(t *testing.T) {
 			}
 			svc := NewExpenseService(repo, clock)
 
-			total, err := svc.SummaryMonth(int(tt.now.Month()))
+			total, err := svc.SummaryMonth(uint8(tt.now.Month()))
 			if err != nil {
 				t.Errorf("expected nil, got: %v", err)
 			}

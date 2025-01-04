@@ -11,7 +11,7 @@ type MockExpenseService struct {
 	DeleteFunc       func(id uint64) error
 	ListFunc         func() ([]domain.Expense, error)
 	SummaryFunc      func() (float64, error)
-	SummaryMonthFunc func(month int) (float64, error)
+	SummaryMonthFunc func(month uint8) (float64, error)
 }
 
 func NewMockExpenseService() ExpenseServiceInterface {
@@ -53,7 +53,7 @@ func (m *MockExpenseService) Summary() (float64, error) {
 	return 0, nil
 }
 
-func (m *MockExpenseService) SummaryMonth(month int) (float64, error) {
+func (m *MockExpenseService) SummaryMonth(month uint8) (float64, error) {
 	if m.SummaryMonthFunc != nil {
 		return m.SummaryMonthFunc(month)
 	}

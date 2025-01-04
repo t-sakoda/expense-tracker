@@ -54,7 +54,7 @@ func TestSummaryCmdRunE(t *testing.T) {
 func TestSummaryCmdRunEWithMonth(t *testing.T) {
 	monthNameTests := []struct {
 		monthName string
-		month     int
+		month     uint8
 	}{
 		{"January", 1},
 		{"February", 2},
@@ -73,13 +73,13 @@ func TestSummaryCmdRunEWithMonth(t *testing.T) {
 	for _, tt := range monthNameTests {
 		t.Run("service.summaryMonth returns the total expenses", func(t *testing.T) {
 			cmd := &cobra.Command{}
-			cmd.Flags().Int("month", tt.month, "")
+			cmd.Flags().Uint8("month", tt.month, "")
 			out := new(bytes.Buffer)
 			cmd.SetOut(out)
 			cmd.SetErr(out)
 			args := []string{}
 			service := &service.MockExpenseService{}
-			service.SummaryMonthFunc = func(month int) (float64, error) {
+			service.SummaryMonthFunc = func(month uint8) (float64, error) {
 				return 100.0, nil
 			}
 
@@ -97,7 +97,7 @@ func TestSummaryCmdRunEWithMonth(t *testing.T) {
 	}
 
 	invalidMonthTests := []struct {
-		month int
+		month uint8
 	}{
 		{0},
 		{13},
@@ -106,13 +106,13 @@ func TestSummaryCmdRunEWithMonth(t *testing.T) {
 	for _, tt := range invalidMonthTests {
 		t.Run("invalid month flag is set", func(t *testing.T) {
 			cmd := &cobra.Command{}
-			cmd.Flags().Int("month", tt.month, "")
+			cmd.Flags().Uint8("month", tt.month, "")
 			out := new(bytes.Buffer)
 			cmd.SetOut(out)
 			cmd.SetErr(out)
 			args := []string{}
 			service := &service.MockExpenseService{}
-			service.SummaryMonthFunc = func(month int) (float64, error) {
+			service.SummaryMonthFunc = func(month uint8) (float64, error) {
 				return 0, nil
 			}
 

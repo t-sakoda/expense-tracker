@@ -12,9 +12,10 @@ import (
 )
 
 var summaryCmd = &cobra.Command{
-	Use:     "summary",
-	Short:   "Summary of all expenses",
-	Example: `expense-tracker summary`,
+	Use:   "summary",
+	Short: "Summary of all expenses",
+	Example: `expense-tracker summary
+expense-tracker summary --month 8`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		file, err := os.OpenFile(jsonFilePath, os.O_RDWR|os.O_CREATE, 0644)
@@ -32,10 +33,9 @@ var summaryCmd = &cobra.Command{
 }
 
 func summaryCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInterface) error {
-	month, errMonth := cmd.Flags().GetInt("month")
-	fmt.Println(month, errMonth)
+	month, errMonth := cmd.Flags().GetUint8("month")
 	// month flag is not set
-	if errMonth != nil {
+	if errMonth != nil || month == 0 {
 		total, err := svc.Summary()
 		if err != nil {
 			return fmt.Errorf("failed to get summary: %w", err)
@@ -59,5 +59,5 @@ func summaryCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceIn
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
-	summaryCmd.Flags().Uint("month", 0, "Month to summarize of current year")
+	summaryCmd.Flags().Uint8("month", 0, "Month to summarize of current year")
 }
