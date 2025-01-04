@@ -6,10 +6,11 @@ import "github.com/t-sakoda/expense-tracker/domain"
  * MockExpenseService
  */
 type MockExpenseService struct {
-	AddFunc    func(description string, amount float64) (uint64, error)
-	UpdateFunc func(id uint64, description string, amount float64) error
-	DeleteFunc func(id uint64) error
-	ListFunc   func() ([]domain.Expense, error)
+	AddFunc     func(description string, amount float64) (uint64, error)
+	UpdateFunc  func(id uint64, description string, amount float64) error
+	DeleteFunc  func(id uint64) error
+	ListFunc    func() ([]domain.Expense, error)
+	SummaryFunc func() (float64, error)
 }
 
 func NewMockExpenseService() ExpenseServiceInterface {
@@ -42,4 +43,11 @@ func (m *MockExpenseService) List() ([]domain.Expense, error) {
 		return m.ListFunc()
 	}
 	return []domain.Expense{}, nil
+}
+
+func (m *MockExpenseService) Summary() (float64, error) {
+	if m.SummaryFunc != nil {
+		return m.SummaryFunc()
+	}
+	return 0, nil
 }

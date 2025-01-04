@@ -2,35 +2,43 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/t-sakoda/expense-tracker/infra"
+	"github.com/t-sakoda/expense-tracker/service"
 )
 
-// summaryCmd represents the summary command
 var summaryCmd = &cobra.Command{
-	Use:   "summary",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:     "summary",
+	Short:   "Summary of all expenses",
+	Example: `expense-tracker summary`,
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("summary called")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		file, err := os.OpenFile(jsonFilePath, os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open file: %w", err)
+		}
+		defer file.Close()
+
+		repo := infra.NewExpenseJsonRepository(file)
+		clock := &infra.Clock{}
+
+		svc := service.NewExpenseService(repo, clock)
+		return summaryCmdRunE(cmd, args, svc)
 	},
+}
+
+func summaryCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInterface) error {
+	total, err := svc.Summary()
+	if err != nil {
+		return fmt.Errorf("failed to get summary: %w", err)
+	}
+
+	cmd.Println(fmt.Sprintf("Total expenses: $%.2f", total))
+	return nil
 }
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// summaryCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// summaryCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
