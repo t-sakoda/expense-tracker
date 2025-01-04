@@ -78,6 +78,10 @@ func (r *ExpenseJsonRepository) Save(expense *domain.Expense) error {
 	return r.writeJson(expenses)
 }
 
+func (r *ExpenseJsonRepository) FindById(id uint64) (*domain.Expense, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {
 	// Seek to the start of the file
 	if _, err := r.file.Seek(0, io.SeekStart); err != nil {

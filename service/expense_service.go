@@ -9,6 +9,7 @@ import (
 var ErrInvalidParameter = errors.New("invalid parameter")
 var ErrFailedToGenerateId = errors.New("failed to generate id")
 var ErrFailedToSaveExpense = errors.New("failed to save expense")
+var ErrExpenseNotFound = errors.New("expense not found")
 
 type ExpenseServiceInterface interface {
 	Add(description string, amount float64) (uint64, error)
@@ -46,5 +47,21 @@ func (s *ExpenseService) Add(description string, amount float64) (uint64, error)
 }
 
 func (s *ExpenseService) Update(id uint64, description string, amount float64) error {
-	return errors.New("not implemented")
+	if description == "" || amount <= 0 {
+		return ErrInvalidParameter
+	}
+
+	expense, err := s.repo.FindById(id)
+	if err != nil {
+		return ErrExpenseNotFound
+	}
+
+	expense.Description = description
+	expense.Amount = amount
+
+	if err := s.repo.Save(expense); err != nil {
+		return ErrFailedToSaveExpense
+	}
+
+	return nil
 }

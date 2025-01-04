@@ -53,7 +53,6 @@ func TestExpenseServiceAddWithError(t *testing.T) {
 	t.Run("Failed to generate id", func(t *testing.T) {
 		repo := &infra.MockExpenseRepository{}
 		repo.GenerateNewIdFunc = func() (uint64, error) {
-			repo.GenerateNewIdCallCount++
 			return 0, errors.New("failed to generate id")
 		}
 		s := NewExpenseService(repo)
@@ -76,7 +75,6 @@ func TestExpenseServiceAddWithError(t *testing.T) {
 	t.Run("Failed to save expense", func(t *testing.T) {
 		repo := &infra.MockExpenseRepository{}
 		repo.SaveFunc = func(expense *domain.Expense) error {
-			repo.SaveCallCount++
 			return errors.New("failed to save expense")
 		}
 		s := NewExpenseService(repo)
