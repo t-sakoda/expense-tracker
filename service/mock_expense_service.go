@@ -18,6 +18,10 @@ func (m *MockExpenseService) Add(description string, amount float64) (uint64, er
 	return 1, nil
 }
 
+func (m *MockExpenseService) Update(id uint64, description string, amount float64) error {
+	return nil
+}
+
 /**
  * MockExpenseServiceWithError
  */
@@ -30,4 +34,8 @@ func NewMockExpenseServiceWithError() ExpenseServiceInterface {
 
 func (m *MockExpenseServiceWithError) Add(description string, amount float64) (uint64, error) {
 	return 0, errors.New("failed to save expense")
+}
+
+func (m *MockExpenseServiceWithError) Update(id uint64, description string, amount float64) error {
+	return errors.New("failed to update expense")
 }

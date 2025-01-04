@@ -12,6 +12,7 @@ var ErrFailedToSaveExpense = errors.New("failed to save expense")
 
 type ExpenseServiceInterface interface {
 	Add(description string, amount float64) (uint64, error)
+	Update(id uint64, description string, amount float64) error
 }
 
 type ExpenseService struct {
@@ -42,4 +43,8 @@ func (s *ExpenseService) Add(description string, amount float64) (uint64, error)
 		return 0, ErrFailedToSaveExpense
 	}
 	return id, nil
+}
+
+func (s *ExpenseService) Update(id uint64, description string, amount float64) error {
+	return errors.New("not implemented")
 }
