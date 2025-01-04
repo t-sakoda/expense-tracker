@@ -79,7 +79,19 @@ func (r *ExpenseJsonRepository) Save(expense *domain.Expense) error {
 }
 
 func (r *ExpenseJsonRepository) FindById(id uint64) (*domain.Expense, error) {
-	return nil, errors.New("not implemented")
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	expenses, err := r.readJson()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find all expenses: %w", err)
+	}
+	for _, e := range expenses {
+		if e.Id == id {
+			return &e, nil
+		}
+	}
+	return nil, fmt.Errorf("expense not found: id=%d", id)
 }
 
 func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {
