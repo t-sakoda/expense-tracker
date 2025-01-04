@@ -48,13 +48,6 @@ func (r *ExpenseJsonRepository) GenerateNewId() (uint64, error) {
 	return maxId + 1, nil
 }
 
-func (r *ExpenseJsonRepository) FindAll() ([]domain.Expense, error) {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
-
-	return r.readJson()
-}
-
 func (r *ExpenseJsonRepository) Save(expense *domain.Expense) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
@@ -118,6 +111,13 @@ func (r *ExpenseJsonRepository) Delete(id uint64) error {
 	}
 
 	return r.writeJson(newExpenses)
+}
+
+func (r *ExpenseJsonRepository) FindAll() ([]domain.Expense, error) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	return r.readJson()
 }
 
 func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {

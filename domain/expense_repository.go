@@ -5,4 +5,5 @@ type ExpenseRepository interface {
 	Save(expense *Expense) error
 	FindById(id uint64) (*Expense, error)
 	Delete(id uint64) error
+	FindAll() ([]Expense, error)
 }

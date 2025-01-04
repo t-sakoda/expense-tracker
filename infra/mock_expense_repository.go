@@ -9,11 +9,13 @@ type MockExpenseRepository struct {
 	GenerateNewIdFunc func() (uint64, error)
 	FindByIdFunc      func(id uint64) (*domain.Expense, error)
 	DeleteFunc        func(id uint64) error
+	FindAllFunc       func() ([]domain.Expense, error)
 
 	SaveCallCount          int
 	GenerateNewIdCallCount int
 	FindByIdCallCount      int
 	DeleteCallCount        int
+	FindAllCallCount       int
 }
 
 func (m *MockExpenseRepository) Save(expense *domain.Expense) error {
@@ -54,4 +56,13 @@ func (m *MockExpenseRepository) Delete(id uint64) error {
 	}
 	// default implementation
 	return nil
+}
+
+func (m *MockExpenseRepository) FindAll() ([]domain.Expense, error) {
+	m.FindAllCallCount++
+	if m.FindAllFunc != nil {
+		return m.FindAllFunc()
+	}
+	// default implementation
+	return []domain.Expense{}, nil
 }

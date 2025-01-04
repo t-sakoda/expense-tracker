@@ -11,12 +11,13 @@ var ErrFailedToGenerateId = errors.New("failed to generate id")
 var ErrFailedToSaveExpense = errors.New("failed to save expense")
 var ErrExpenseNotFound = errors.New("expense not found")
 var ErrFailedToDeleteExpense = errors.New("failed to delete expense")
+var ErrFailedToListExpenses = errors.New("failed to list expenses")
 
 type ExpenseServiceInterface interface {
 	Add(description string, amount float64) (uint64, error)
 	Update(id uint64, description string, amount float64) error
 	Delete(id uint64) error
-	List() ([]*domain.Expense, error)
+	List() ([]domain.Expense, error)
 }
 
 type ExpenseService struct {
@@ -83,6 +84,10 @@ func (s *ExpenseService) Delete(id uint64) error {
 	return nil
 }
 
-func (s *ExpenseService) List() ([]*domain.Expense, error) {
-	return nil, errors.New("not implemented")
+func (s *ExpenseService) List() ([]domain.Expense, error) {
+	expenses, err := s.repo.FindAll()
+	if err != nil {
+		return nil, ErrFailedToListExpenses
+	}
+	return expenses, nil
 }

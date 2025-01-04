@@ -18,7 +18,7 @@ func TestListCmdRunE(t *testing.T) {
 		cmd.SetErr(out)
 		args := []string{}
 		service := &service.MockExpenseService{}
-		service.ListFunc = func() ([]*domain.Expense, error) {
+		service.ListFunc = func() ([]domain.Expense, error) {
 			return nil, errors.New("something went wrong")
 		}
 		err := listCmdRunE(cmd, args, service)
@@ -34,8 +34,8 @@ func TestListCmdRunE(t *testing.T) {
 		cmd.SetErr(out)
 		args := []string{}
 		service := &service.MockExpenseService{}
-		service.ListFunc = func() ([]*domain.Expense, error) {
-			return []*domain.Expense{
+		service.ListFunc = func() ([]domain.Expense, error) {
+			return []domain.Expense{
 				{Id: 1, Description: "Lunch", Amount: 20},
 				{Id: 2, Description: "Dinner", Amount: 50},
 			}, nil
