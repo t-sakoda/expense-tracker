@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -41,4 +42,29 @@ func TestDeleteCmdRunE(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDeleteCmdRunEWithError(t *testing.T) {
+	t.Run("when service.Delete returns an error", func(t *testing.T) {
+		cmd := &cobra.Command{}
+		cmd.Flags().Uint64("id", 1, "")
+
+		out := new(bytes.Buffer)
+		cmd.SetOut(out)
+		cmd.SetErr(out)
+		args := []string{}
+		service := &service.MockExpenseService{}
+		service.DeleteFunc = func(id uint64) error {
+			return errors.New("something went wrong")
+		}
+
+		err := deleteCmdRunE(cmd, args, service)
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+		expected := "failed to delete expense: something went wrong"
+		if err.Error() != expected {
+			t.Errorf("expected: %s, got: %s", expected, err.Error())
+		}
+	})
 }

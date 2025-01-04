@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -65,8 +66,11 @@ func TestAddCmdRunEWithUseCaseError(t *testing.T) {
 			cmd.SetOut(out)
 			cmd.SetErr(out)
 			args := []string{}
-			uc := &service.MockExpenseServiceWithError{}
-			err := addCmdRunE(cmd, args, uc)
+			service := &service.MockExpenseService{}
+			service.AddFunc = func(description string, amount float64) (uint64, error) {
+				return 0, errors.New("something went wrong")
+			}
+			err := addCmdRunE(cmd, args, service)
 
 			if err == nil {
 				t.Errorf("expected error, got nil")
