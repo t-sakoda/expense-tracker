@@ -10,8 +10,6 @@ import (
 	"github.com/t-sakoda/expense-tracker/service"
 )
 
-const jsonFilePath = "expenses.json"
-
 func addCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInterface) error {
 	amount, errA := cmd.Flags().GetFloat64("amount")
 	description, errD := cmd.Flags().GetString("description")
