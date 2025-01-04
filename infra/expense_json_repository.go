@@ -94,6 +94,10 @@ func (r *ExpenseJsonRepository) FindById(id uint64) (*domain.Expense, error) {
 	return nil, fmt.Errorf("expense not found: id=%d", id)
 }
 
+func (r *ExpenseJsonRepository) Delete(id uint64) error {
+	return errors.New("not implemented")
+}
+
 func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {
 	// Seek to the start of the file
 	if _, err := r.file.Seek(0, io.SeekStart); err != nil {

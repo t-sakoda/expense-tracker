@@ -10,6 +10,7 @@ var ErrInvalidParameter = errors.New("invalid parameter")
 var ErrFailedToGenerateId = errors.New("failed to generate id")
 var ErrFailedToSaveExpense = errors.New("failed to save expense")
 var ErrExpenseNotFound = errors.New("expense not found")
+var ErrFailedToDeleteExpense = errors.New("failed to delete expense")
 
 type ExpenseServiceInterface interface {
 	Add(description string, amount float64) (uint64, error)
@@ -68,5 +69,12 @@ func (s *ExpenseService) Update(id uint64, description string, amount float64) e
 }
 
 func (s *ExpenseService) Delete(id uint64) error {
-	return errors.New("not implemented")
+	if _, err := s.repo.FindById(id); err != nil {
+		return ErrExpenseNotFound
+	}
+	if err := s.repo.Delete(id); err != nil {
+		return ErrFailedToDeleteExpense
+	}
+
+	return nil
 }
