@@ -95,7 +95,28 @@ func (r *ExpenseJsonRepository) FindById(id uint64) (*domain.Expense, error) {
 }
 
 func (r *ExpenseJsonRepository) Delete(id uint64) error {
-	return errors.New("not implemented")
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	expenses, err := r.readJson()
+	if err != nil {
+		return fmt.Errorf("failed to find all expenses: %w", err)
+	}
+
+	var newExpenses []domain.Expense
+	var found bool = false
+	for _, e := range expenses {
+		if e.Id == id {
+			found = true
+			continue
+		}
+		newExpenses = append(newExpenses, e)
+	}
+	if !found {
+		return fmt.Errorf("expense not found: id=%d", id)
+	}
+
+	return r.writeJson(newExpenses)
 }
 
 func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {
