@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/t-sakoda/expense-tracker/domain"
 )
@@ -125,12 +126,39 @@ func (r *ExpenseJsonRepository) readJson() ([]domain.Expense, error) {
 		return nil, fmt.Errorf("failed to seek to the start of the file: %w", err)
 	}
 
-	var expenses []domain.Expense
+	serialized := []map[string]interface{}{}
 	decoder := json.NewDecoder(r.file)
-	err := decoder.Decode(&expenses)
+	err := decoder.Decode(&serialized)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("failed to decode JSON: %w", err)
 	}
+
+	var expenses []domain.Expense
+	for _, s := range serialized {
+		id, ok := s["Id"].(float64)
+		if !ok {
+			return nil, errors.New("failed to parse id")
+		}
+		description, ok := s["Description"].(string)
+		if !ok {
+			return nil, errors.New("failed to parse description")
+		}
+		amount, ok := s["Amount"].(float64)
+		if !ok {
+			return nil, errors.New("failed to parse amount")
+		}
+		date, err := time.Parse(time.RFC3339, s["Date"].(string))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse date: %w", err)
+		}
+		expenses = append(expenses, domain.Expense{
+			Id:          uint64(id),
+			Description: description,
+			Amount:      amount,
+			Date:        date,
+		})
+	}
+
 	return expenses, nil
 }
 
@@ -146,9 +174,19 @@ func (r *ExpenseJsonRepository) writeJson(expenses []domain.Expense) error {
 		return fmt.Errorf("failed to clear the file: %w", err)
 	}
 
+	serialized := make([]map[string]interface{}, len(expenses))
+	for i, e := range expenses {
+		serialized[i] = map[string]interface{}{
+			"Id":          e.Id,
+			"Description": e.Description,
+			"Amount":      e.Amount,
+			"Date":        e.Date.UTC().Format("2006-01-02T15:04:05.000Z"),
+		}
+	}
+
 	encoder := json.NewEncoder(r.file)
 	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(expenses); err != nil {
+	if err := encoder.Encode(serialized); err != nil {
 		return fmt.Errorf("failed to encode JSON: %w", err)
 	}
 	return nil

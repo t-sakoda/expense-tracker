@@ -4,11 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"reflect"
 	"testing"
+	"time"
 
 	"github.com/spf13/afero"
 	"github.com/t-sakoda/expense-tracker/domain"
 )
+
+var mockDateStr = "2021-01-01T12:34:56.789Z"
+var mockDate, _ = time.Parse(time.RFC3339, mockDateStr)
 
 func TestExpenseJsonRepositorySave(t *testing.T) {
 	t.Run("when Save is successful", func(t *testing.T) {
@@ -24,6 +29,7 @@ func TestExpenseJsonRepositorySave(t *testing.T) {
 			Id:          1,
 			Description: "test",
 			Amount:      1000,
+			Date:        mockDate,
 		}
 		saveErr := repo.Save(expense)
 		if saveErr != nil {
@@ -35,10 +41,19 @@ func TestExpenseJsonRepositorySave(t *testing.T) {
 		file.Seek(0, io.SeekStart)
 		buffer.ReadFrom(file)
 		unmarshalErr := json.Unmarshal(buffer.Bytes(), &actual)
+
+		expected := []map[string]interface{}{
+			{
+				"Id":          uint64(1),
+				"Description": "test",
+				"Amount":      1000.0,
+				"Date":        mockDateStr,
+			},
+		}
 		if unmarshalErr != nil {
 			t.Fatalf("failed to unmarshal JSON: %v", unmarshalErr)
 		}
-		if len(actual) != 1 || actual[0] != *expense {
+		if reflect.DeepEqual(actual, expected) {
 			t.Errorf("unexpected saved data: %v", actual)
 		}
 	})
@@ -57,6 +72,7 @@ func TestExpenseJsonRepositorySave(t *testing.T) {
 			Id:          1,
 			Description: "test",
 			Amount:      1000,
+			Date:        mockDate,
 		}
 		saveErr := repo.Save(expense)
 		if saveErr == nil {
@@ -76,6 +92,7 @@ func TestExpenseJsonRepositorySave(t *testing.T) {
 			Id:          1,
 			Description: "test",
 			Amount:      1000,
+			Date:        mockDate,
 		}
 		initialData := []domain.Expense{*expense}
 		encoder := json.NewEncoder(file)
@@ -89,6 +106,7 @@ func TestExpenseJsonRepositorySave(t *testing.T) {
 			Id:          1,
 			Description: "updated",
 			Amount:      2000,
+			Date:        mockDate,
 		}
 		saveErr := repo.Save(updatedExpense)
 		if saveErr != nil {
@@ -103,7 +121,16 @@ func TestExpenseJsonRepositorySave(t *testing.T) {
 		if unmarshalErr != nil {
 			t.Fatalf("failed to unmarshal JSON: %v", unmarshalErr)
 		}
-		if len(actual) != 1 || actual[0] != *updatedExpense {
+
+		expected := []map[string]interface{}{
+			{
+				"Id":          uint64(1),
+				"Description": "updated",
+				"Amount":      2000.0,
+				"Date":        mockDateStr,
+			},
+		}
+		if reflect.DeepEqual(actual, expected) {
 			t.Errorf("unexpected saved data: %v", actual)
 		}
 	})

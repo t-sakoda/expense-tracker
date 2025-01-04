@@ -20,12 +20,14 @@ type ExpenseServiceInterface interface {
 }
 
 type ExpenseService struct {
-	repo domain.ExpenseRepository
+	repo  domain.ExpenseRepository
+	clock domain.Clock
 }
 
-func NewExpenseService(repo domain.ExpenseRepository) *ExpenseService {
+func NewExpenseService(repo domain.ExpenseRepository, clock domain.Clock) *ExpenseService {
 	return &ExpenseService{
-		repo: repo,
+		repo:  repo,
+		clock: clock,
 	}
 }
 
@@ -42,6 +44,7 @@ func (s *ExpenseService) Add(description string, amount float64) (uint64, error)
 		Id:          id,
 		Description: description,
 		Amount:      amount,
+		Date:        s.clock.Now(),
 	}
 	if err := s.repo.Save(expense); err != nil {
 		return 0, ErrFailedToSaveExpense

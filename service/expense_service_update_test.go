@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/t-sakoda/expense-tracker/domain"
 	"github.com/t-sakoda/expense-tracker/infra"
@@ -21,10 +22,15 @@ func TestUpdate(t *testing.T) {
 		{1, "Coffee", 0, true},
 	}
 
+	clock := &infra.MockClock{}
+	clock.NowFunc = func() time.Time {
+		return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.description, func(t *testing.T) {
 			repo := &infra.MockExpenseRepository{}
-			s := NewExpenseService(repo)
+			s := NewExpenseService(repo, clock)
 
 			err := s.Update(tt.id, tt.description, tt.amount)
 			if (err != nil) != tt.expectError {
@@ -35,12 +41,16 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdateWithError(t *testing.T) {
+	clock := &infra.MockClock{}
+	clock.NowFunc = func() time.Time {
+		return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
 	t.Run("Expense not found", func(t *testing.T) {
 		repo := &infra.MockExpenseRepository{}
 		repo.FindByIdFunc = func(id uint64) (*domain.Expense, error) {
 			return nil, errors.New("expense not found")
 		}
-		s := NewExpenseService(repo)
+		s := NewExpenseService(repo, clock)
 		err := s.Update(1, "Lunch", 20)
 		if err != ErrExpenseNotFound {
 			t.Errorf("expected: %v, got: %v", ErrExpenseNotFound, err)
@@ -49,7 +59,7 @@ func TestUpdateWithError(t *testing.T) {
 
 	t.Run("Invalid description", func(t *testing.T) {
 		repo := &infra.MockExpenseRepository{}
-		s := NewExpenseService(repo)
+		s := NewExpenseService(repo, clock)
 		err := s.Update(1, "", 20)
 		if err != ErrInvalidParameter {
 			t.Errorf("expected: %v, got: %v", ErrInvalidParameter, err)
@@ -58,7 +68,7 @@ func TestUpdateWithError(t *testing.T) {
 
 	t.Run("Invalid amount", func(t *testing.T) {
 		repo := &infra.MockExpenseRepository{}
-		s := NewExpenseService(repo)
+		s := NewExpenseService(repo, clock)
 		err := s.Update(1, "Lunch", 0)
 		if err != ErrInvalidParameter {
 			t.Errorf("expected: %v, got: %v", ErrInvalidParameter, err)

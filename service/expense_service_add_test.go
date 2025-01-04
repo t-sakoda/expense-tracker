@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/t-sakoda/expense-tracker/domain"
 	"github.com/t-sakoda/expense-tracker/infra"
@@ -20,10 +21,15 @@ func TestExpenseServiceAdd(t *testing.T) {
 		{"Lunch", -20, true},
 	}
 
+	clock := &infra.MockClock{}
+	clock.NowFunc = func() time.Time {
+		return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.description, func(t *testing.T) {
 			repo := &infra.MockExpenseRepository{}
-			s := NewExpenseService(repo)
+			s := NewExpenseService(repo, clock)
 			id, err := s.Add(tt.description, tt.amount)
 
 			if (err != nil) != tt.expectError {
@@ -50,12 +56,17 @@ func TestExpenseServiceAdd(t *testing.T) {
 }
 
 func TestExpenseServiceAddWithError(t *testing.T) {
+	clock := &infra.MockClock{}
+	clock.NowFunc = func() time.Time {
+		return time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
 	t.Run("Failed to generate id", func(t *testing.T) {
 		repo := &infra.MockExpenseRepository{}
 		repo.GenerateNewIdFunc = func() (uint64, error) {
 			return 0, errors.New("failed to generate id")
 		}
-		s := NewExpenseService(repo)
+		s := NewExpenseService(repo, clock)
 		id, err := s.Add("Lunch", 20)
 
 		if err == nil {
@@ -77,7 +88,7 @@ func TestExpenseServiceAddWithError(t *testing.T) {
 		repo.SaveFunc = func(expense *domain.Expense) error {
 			return errors.New("failed to save expense")
 		}
-		s := NewExpenseService(repo)
+		s := NewExpenseService(repo, clock)
 		id, err := s.Add("Lunch", 20)
 
 		if err == nil {

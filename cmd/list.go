@@ -37,7 +37,8 @@ var listCmd = &cobra.Command{
 		defer file.Close()
 
 		repo := infra.NewExpenseJsonRepository(file)
-		svc := service.NewExpenseService(repo)
+		clock := &infra.Clock{}
+		svc := service.NewExpenseService(repo, clock)
 		return listCmdRunE(cmd, args, svc)
 	},
 }

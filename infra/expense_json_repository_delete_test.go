@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
-	"github.com/t-sakoda/expense-tracker/domain"
 )
 
 func TestExpenseJsonRepositoryDelete(t *testing.T) {
@@ -20,12 +19,14 @@ func TestExpenseJsonRepositoryDelete(t *testing.T) {
 		defer file.Close()
 
 		repo := NewExpenseJsonRepository(file)
-		expense := &domain.Expense{
-			Id:          1,
-			Description: "test",
-			Amount:      1000,
+		initialData := []map[string]interface{}{
+			{
+				"Id":          1,
+				"Description": "test",
+				"Amount":      1000,
+				"Date":        "2021-01-01T12:34:56.789Z",
+			},
 		}
-		initialData := []domain.Expense{*expense}
 		encoder := json.NewEncoder(file)
 		encodeErr := encoder.Encode(initialData)
 		if encodeErr != nil {
@@ -37,7 +38,7 @@ func TestExpenseJsonRepositoryDelete(t *testing.T) {
 			t.Fatalf("failed to delete expense: %v", deleteErr)
 		}
 
-		var actual []domain.Expense
+		var actual []map[string]interface{}
 		buffer := new(bytes.Buffer)
 		file.Seek(0, io.SeekStart)
 		buffer.ReadFrom(file)
@@ -58,12 +59,14 @@ func TestExpenseJsonRepositoryDelete(t *testing.T) {
 		}
 
 		repo := NewExpenseJsonRepository(file)
-		expense := &domain.Expense{
-			Id:          1,
-			Description: "test",
-			Amount:      1000,
+		initialData := []map[string]interface{}{
+			{
+				"Id":          1,
+				"Description": "test",
+				"Amount":      1000,
+				"Date":        "2021-01-01T12:34:56.789Z",
+			},
 		}
-		initialData := []domain.Expense{*expense}
 		encoder := json.NewEncoder(file)
 		encodeErr := encoder.Encode(initialData)
 		if encodeErr != nil {

@@ -58,7 +58,8 @@ var updateCmd = &cobra.Command{
 		defer file.Close()
 
 		repo := infra.NewExpenseJsonRepository(file)
-		service := service.NewExpenseService(repo)
+		clock := &infra.Clock{}
+		service := service.NewExpenseService(repo, clock)
 		return updateCmdRunE(cmd, args, service)
 	},
 }
