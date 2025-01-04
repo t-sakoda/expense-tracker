@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/t-sakoda/expense-tracker/domain"
 )
@@ -110,5 +111,17 @@ func (s *ExpenseService) Summary() (float64, error) {
 }
 
 func (s *ExpenseService) SummaryMonth(month int) (float64, error) {
-	return 0, errors.New("not implemented")
+	expenses, err := s.repo.FindAll()
+	if err != nil {
+		return 0, ErrFailedToSummary
+	}
+
+	total := 0.0
+	for _, expense := range expenses {
+		if expense.Date.Year() == s.clock.Now().Year() && expense.Date.Month() == time.Month(month) {
+			total += expense.Amount
+		}
+	}
+
+	return total, nil
 }
