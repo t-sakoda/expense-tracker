@@ -63,4 +63,48 @@ func TestExpenseJsonRepositorySave(t *testing.T) {
 			t.Fatalf("expected an error but got nil")
 		}
 	})
+
+	t.Run("when update the existing expense", func(t *testing.T) {
+		fs := afero.NewMemMapFs()
+		file, err := fs.Create("test.json")
+		if err != nil {
+			t.Fatalf("failed to create file: %v", err)
+		}
+		defer file.Close()
+
+		expense := &domain.Expense{
+			Id:          1,
+			Description: "test",
+			Amount:      1000,
+		}
+		initialData := []domain.Expense{*expense}
+		encoder := json.NewEncoder(file)
+		encodeErr := encoder.Encode(initialData)
+		if encodeErr != nil {
+			t.Fatalf("failed to encode initial data: %v", encodeErr)
+		}
+
+		repo := NewExpenseJsonRepository(file)
+		updatedExpense := &domain.Expense{
+			Id:          1,
+			Description: "updated",
+			Amount:      2000,
+		}
+		saveErr := repo.Save(updatedExpense)
+		if saveErr != nil {
+			t.Fatalf("failed to save expense: %v", saveErr)
+		}
+
+		var actual []domain.Expense
+		buffer := new(bytes.Buffer)
+		file.Seek(0, io.SeekStart)
+		buffer.ReadFrom(file)
+		unmarshalErr := json.Unmarshal(buffer.Bytes(), &actual)
+		if unmarshalErr != nil {
+			t.Fatalf("failed to unmarshal JSON: %v", unmarshalErr)
+		}
+		if len(actual) != 1 || actual[0] != *updatedExpense {
+			t.Errorf("unexpected saved data: %v", actual)
+		}
+	})
 }
