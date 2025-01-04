@@ -16,6 +16,7 @@ type ExpenseServiceInterface interface {
 	Add(description string, amount float64) (uint64, error)
 	Update(id uint64, description string, amount float64) error
 	Delete(id uint64) error
+	List() ([]*domain.Expense, error)
 }
 
 type ExpenseService struct {
@@ -77,4 +78,8 @@ func (s *ExpenseService) Delete(id uint64) error {
 	}
 
 	return nil
+}
+
+func (s *ExpenseService) List() ([]*domain.Expense, error) {
+	return nil, errors.New("not implemented")
 }

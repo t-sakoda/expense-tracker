@@ -1,5 +1,7 @@
 package service
 
+import "github.com/t-sakoda/expense-tracker/domain"
+
 /**
  * MockExpenseService
  */
@@ -7,6 +9,7 @@ type MockExpenseService struct {
 	AddFunc    func(description string, amount float64) (uint64, error)
 	UpdateFunc func(id uint64, description string, amount float64) error
 	DeleteFunc func(id uint64) error
+	ListFunc   func() ([]*domain.Expense, error)
 }
 
 func NewMockExpenseService() ExpenseServiceInterface {
@@ -34,24 +37,9 @@ func (m *MockExpenseService) Delete(id uint64) error {
 	return nil
 }
 
-// /**
-//  * MockExpenseServiceWithError
-//  */
-// type MockExpenseServiceWithError struct {
-// }
-
-// func NewMockExpenseServiceWithError() ExpenseServiceInterface {
-// 	return &MockExpenseServiceWithError{}
-// }
-
-// func (m *MockExpenseServiceWithError) Add(description string, amount float64) (uint64, error) {
-// 	return 0, errors.New("failed to save expense")
-// }
-
-// func (m *MockExpenseServiceWithError) Update(id uint64, description string, amount float64) error {
-// 	return errors.New("failed to update expense")
-// }
-
-// func (m *MockExpenseServiceWithError) Delete(id uint64) error {
-// 	return errors.New("failed to delete expense")
-// }
+func (m *MockExpenseService) List() ([]*domain.Expense, error) {
+	if m.ListFunc != nil {
+		return m.ListFunc()
+	}
+	return []*domain.Expense{}, nil
+}
