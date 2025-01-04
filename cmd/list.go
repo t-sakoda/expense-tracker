@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 	"github.com/t-sakoda/expense-tracker/infra"
@@ -16,9 +17,13 @@ func listCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInter
 	}
 
 	// Print the expenses
-	cmd.Printf("ID\tDate\tDescription\tAmount")
+	w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 1, ' ', tabwriter.TabIndent)
+	defer w.Flush()
+
+	fmt.Fprintf(w, "ID\tDate\tDescription\tAmount\n")
 	for _, expense := range expenses {
-		cmd.Printf("%d\t%s\t$%.2f\n", expense.Id, expense.Description, expense.Amount)
+		date := expense.Date.Format("2006-01-02")
+		fmt.Fprintf(w, "%d\t%s\t%s\t$%.2f\n", expense.Id, date, expense.Description, expense.Amount)
 	}
 
 	return nil
