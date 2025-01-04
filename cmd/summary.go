@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/t-sakoda/expense-tracker/infra"
@@ -30,15 +32,32 @@ var summaryCmd = &cobra.Command{
 }
 
 func summaryCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInterface) error {
-	total, err := svc.Summary()
-	if err != nil {
-		return fmt.Errorf("failed to get summary: %w", err)
+	month, errMonth := cmd.Flags().GetInt("month")
+	fmt.Println(month, errMonth)
+	// month flag is not set
+	if errMonth != nil {
+		total, err := svc.Summary()
+		if err != nil {
+			return fmt.Errorf("failed to get summary: %w", err)
+		}
+		cmd.Println(fmt.Sprintf("Total expenses: $%.2f", total))
+		return nil
 	}
-
-	cmd.Println(fmt.Sprintf("Total expenses: $%.2f", total))
-	return nil
+	// valid month flag is set
+	if 1 <= month && month <= 12 {
+		total, err := svc.SummaryMonth(month)
+		if err != nil {
+			return fmt.Errorf("failed to get summary: %w", err)
+		}
+		monthName := time.Month(month).String()
+		cmd.Println(fmt.Sprintf("Total expenses for %s: $%.2f", monthName, total))
+		return nil
+	}
+	// invalid month flag is set
+	return errors.New("invalid month")
 }
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
+	summaryCmd.Flags().Uint("month", 0, "Month to summarize of current year")
 }

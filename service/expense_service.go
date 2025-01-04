@@ -20,6 +20,7 @@ type ExpenseServiceInterface interface {
 	Delete(id uint64) error
 	List() ([]domain.Expense, error)
 	Summary() (float64, error)
+	SummaryMonth(month int) (float64, error)
 }
 
 type ExpenseService struct {
@@ -106,4 +107,8 @@ func (s *ExpenseService) Summary() (float64, error) {
 	}
 
 	return total, nil
+}
+
+func (s *ExpenseService) SummaryMonth(month int) (float64, error) {
+	return 0, errors.New("not implemented")
 }
