@@ -12,6 +12,7 @@ var ErrFailedToSaveExpense = errors.New("failed to save expense")
 var ErrExpenseNotFound = errors.New("expense not found")
 var ErrFailedToDeleteExpense = errors.New("failed to delete expense")
 var ErrFailedToListExpenses = errors.New("failed to list expenses")
+var ErrFailedToSummary = errors.New("failed to summary")
 
 type ExpenseServiceInterface interface {
 	Add(description string, amount float64) (uint64, error)
@@ -94,5 +95,15 @@ func (s *ExpenseService) List() ([]domain.Expense, error) {
 }
 
 func (s *ExpenseService) Summary() (float64, error) {
-	return 0, errors.New("not implemented")
+	expenses, err := s.repo.FindAll()
+	if err != nil {
+		return 0, ErrFailedToSummary
+	}
+
+	total := 0.0
+	for _, expense := range expenses {
+		total += expense.Amount
+	}
+
+	return total, nil
 }
