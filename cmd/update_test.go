@@ -38,6 +38,12 @@ func TestUpdateCmdRunE(t *testing.T) {
 			if (err != nil) != tt.expectError {
 				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
 			}
+			if !tt.expectError {
+				expected := "Expense updated successfully (ID: 1)\n"
+				if out.String() != expected {
+					t.Errorf("expected: %s, got: %s", expected, out.String())
+				}
+			}
 		})
 	}
 }

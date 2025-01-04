@@ -14,23 +14,26 @@ func updateCmdRunE(cmd *cobra.Command, _ []string, svc service.ExpenseServiceInt
 	id, errId := cmd.Flags().GetUint64("id")
 	amount, errA := cmd.Flags().GetFloat64("amount")
 	description, errD := cmd.Flags().GetString("description")
+
 	if errId != nil {
-		return fmt.Errorf("failed to get id: %w", errId)
+		return fmt.Errorf("failed to get ID: %w", errId)
 	}
 	if id == 0 {
-		return fmt.Errorf("id is invalid")
+		return fmt.Errorf("invalid expense ID: %d", id)
 	}
+
 	if errA != nil {
 		return fmt.Errorf("failed to get amount: %w", errA)
 	}
 	if amount <= 0 {
 		return fmt.Errorf("invalid expense amount: %f", amount)
 	}
+
 	if errD != nil {
 		return fmt.Errorf("failed to get description: %w", errD)
 	}
 	if description == "" {
-		return fmt.Errorf("empty description is invalid")
+		return fmt.Errorf("description is required")
 	}
 
 	errUpdate := svc.Update(id, description, amount)
